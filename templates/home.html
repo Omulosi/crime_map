@@ -4,10 +4,7 @@
 <head>
 	<title>Crime Map</title>
 
-	<link type="text/css" rel="stylesheet" href="{{url_for('static',
-		filename='css/style.css') }}" />
-
-	<meta id="crime-data" data-crime="{{crimes|safe}}">
+	<link type="text/css" rel="stylesheet" href="{{url_for('static', filename='css/style.css') }}" />
 
 	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBXnkGI1Pl67r2zlaMq3orircEnZ5aKQIA">
 	</script>
@@ -15,34 +12,36 @@
 	<script type="text/javascript">
 		let map;
 		let marker;
+		let crimes = {{ crimes | safe }};
+
 		function initialize() {
+
 			let mapOptions = {
 			center: new google.maps.LatLng(-1.2921, 36.8219),
 			zoom: 15
 			};
 
-			map = new google.maps.Map(document.getElementById("map-canvas"),mapOptions);
+			map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
 
 			google.maps.event.addListener(map, 'click',
 				function(event){
 				placeMarker(event.latLng);
 			});
 
-			placeCrimes({{crimes | safe}});
+			placeCrimes(crimes);
 
 		}
 
 		function placeCrimes(crimes){
-			console.log(crimes);
-			for (i = 0; i < crimes.length; i++){
-				console.log(crimes[i].latitude);
+			for (let crime of crimes) {
+				addNewMarker(new google.maps.LatLng(crime.latitude, crime.longitude),
+					crime.date + "\n" + crime.category + "\n" + crime.description);
+				/*
 				crime = new google.maps.Marker({
-					postion: new google.maps.LatLng(crimes[i].latitude, crimes[i].longitude),
+					postion: new google.maps.LatLng(-1.2921, 36.8219),
 					map: map,
-					title: crimes[i].date + "\n" + crimes[i].category + "\n" + crimes[i].description
-				});
-				console.log(crime);
-
+					title: crime.date + "\n" + crime.category + "\n" + crime.description
+				});*/
 			}
 		}
 
@@ -59,6 +58,13 @@
 			document.getElementById('longitude').value = location.lng();
 		}
 
+		function addNewMarker(location, title) {
+			marker = new google.maps.Marker({
+			position: location,
+			map: map,
+			title: title});
+		}
+
 	</script>
 </head>
 
@@ -71,25 +77,38 @@
 		height:500px"></div>
 		<div id="newcrimeform">
 			<h2>Submit new crime</h2>
+			{% if errors %}
+				<ul class="error">
+					{% for error_key in errors %}
+					<li>{{errors[error_key]}}</li>
+					{% endfor %}
+				</ul>
+			{% endif %}
 			<form action="/submitcrime" method="POST">
 				<label for="category">Category</label>
 				<select name="category" id="category">
 					{% for category in categories %}
-						<option value="{{category}}">{{category}}</option>
+
+						{% if user_category and user_category ==  category %}
+							<option value="{{category}}" selected="selected">{{category}}</option>
+						{% else %}
+							<option value="{{category}}">{{category}}</option>
+						{% endif %}
+
 					{% endfor %}
 				</select>
 				<label for="date">Date</label>
-				<input name="date" id="date" type="date">
+				<input name="date" id="date" type="date" value="{{date}}">
 				<label for="latitude">Latitude</label>
 				<input name="latitude" id="latitude"
-				type="text">
+				type="text" readonly="">
 				<label for="longitude">Longitude</label>
 				<input name="longitude" id="longitude"
-				type="text">
+				type="text" readonly="">
 				<label for="description">Description</label>
 				<textarea name="description" id="description"
 				placeholder="A brief but detailed
-				description of the crime"></textarea>
+				description of the crime">{{description}}</textarea>
 				<input type="submit" value="Submit">
 			</form>
 		</div>

@@ -3,6 +3,7 @@ body {
 	background: #eee;
 }
 
+
 input, select, textarea {
 	display: block;
 	color: grey;
@@ -33,4 +34,8 @@ input[type="submit"]:hover {
 #newcrimeform {
 	float: right;
 	width: 25%;
+}
+
+.error {
+	color: red;
 }
