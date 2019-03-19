@@ -7,6 +7,8 @@
 	<link type="text/css" rel="stylesheet" href="{{url_for('static',
 		filename='css/style.css') }}" />
 
+	<meta id="crime-data" data-crime="{{crimes|safe}}">
+
 	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBXnkGI1Pl67r2zlaMq3orircEnZ5aKQIA">
 	</script>
 
@@ -25,6 +27,23 @@
 				function(event){
 				placeMarker(event.latLng);
 			});
+
+			placeCrimes({{crimes | safe}});
+
+		}
+
+		function placeCrimes(crimes){
+			console.log(crimes);
+			for (i = 0; i < crimes.length; i++){
+				console.log(crimes[i].latitude);
+				crime = new google.maps.Marker({
+					postion: new google.maps.LatLng(crimes[i].latitude, crimes[i].longitude),
+					map: map,
+					title: crimes[i].date + "\n" + crimes[i].category + "\n" + crimes[i].description
+				});
+				console.log(crime);
+
+			}
 		}
 
 		function placeMarker(location) {
@@ -55,8 +74,9 @@
 			<form action="/submitcrime" method="POST">
 				<label for="category">Category</label>
 				<select name="category" id="category">
-					<option value="mugging">Mugging</option>
-					<option value="breakin">Break-in</option>
+					{% for category in categories %}
+						<option value="{{category}}">{{category}}</option>
+					{% endfor %}
 				</select>
 				<label for="date">Date</label>
 				<input name="date" id="date" type="date">
