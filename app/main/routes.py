@@ -1,12 +1,14 @@
+"""
+"""
 import json
-from dbhelper import DBHelper
-from flask import Flask, render_template, request, redirect, url_for
-from utils import CATEGORIES, format_date, sanitize_string
+from flask import Flask, render_template, request, redirect, url_for, g
+from app.helpers import CATEGORIES, format_date, sanitize_string
+from app.main import bp
+from app.models import DBHelper
 
-app = Flask(__name__)
 DB = DBHelper()
 
-@app.route("/")
+@bp.route("/")
 def home(**kwargs):
     crimes = DB.get_all_crimes()
     crimes = json.dumps(crimes)
@@ -14,7 +16,7 @@ def home(**kwargs):
             categories=CATEGORIES, **kwargs)
 
 
-@app.route('/submitcrime', methods=('POST',))
+@bp.route('/submitcrime', methods=('POST',))
 def submitcrime():
     error = False
     errors = {}
@@ -42,8 +44,4 @@ def submitcrime():
     if error:
         return home(errors=errors, description=description, date=date, user_category=category)
     DB.add_crime(category, date, latitude, longitude, description)
-    return redirect(url_for('home'))
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    return redirect(url_for('main.home'))
